@@ -1,0 +1,4 @@
+from engine.backtest_runner import run_backtest
+from strategies.moving_average_crossover import MovingAverageStrategy
+
+run_backtest(MovingAverageStrategy)
