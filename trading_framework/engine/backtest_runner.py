@@ -3,7 +3,7 @@ from data.data_factory import get_data_feed
 from broker.broker_factory import get_broker
 from analyzers.analyzer_suite import attach_analyzers
 
-def run_backtest(strategy_class):
+def run_backtest(strategy_class: type) -> None:
     cerebro = bt.Cerebro()
 
     # Data
