@@ -1,5 +1,6 @@
 import backtrader as bt
-from backtrader.feeds import GenericCSVData
+import backtrader.feeds as btfeeds
+from backtrader.feeds import GenericCSVData, YahooFinanceCSVData
 import pandas as pd
 import os
 from datetime import datetime
@@ -10,7 +11,7 @@ from typing import Union, List, Optional
 def get_csv_data(
     segment_key: str,
     group_or_ticker: Union[str, List[str]],
-    data_dir: str = 'data'
+    data_dir: Optional[str] = 'data/csv_data'
 ) -> Union[GenericCSVData, List[GenericCSVData]]:
     """
     For a group or ticker and segment, check if the CSV exists. If so, return it as a backtrader GenericCSVData.
@@ -44,7 +45,7 @@ def get_csv_data(
                 high=2,
                 low=3,
                 close=4,
-                volume=6,
+                volume=5,
                 openinterest=-1
             )
             datas.append(data)
@@ -65,7 +66,7 @@ def get_csv_data(
                     high=2,
                     low=3,
                     close=4,
-                    volume=6,
+                    volume=5,
                     openinterest=-1
                 )
                 datas.append(data)
@@ -79,7 +80,7 @@ def get_csv_data(
 def download_segment_data(
     segment_key: str,
     group_or_ticker: Union[str, List[str]],
-    data_dir: str = 'data'
+    data_dir: str = 'data/csv_data'
 ) -> None:
     """
     Downloads data for a given segment (date range) for a group (from STOCK_GROUPS) or a single ticker.
@@ -123,12 +124,12 @@ def download_segment_data(
             # yfinance returns a multi-indexed DataFrame for multiple tickers
             if len(batch) == 1 and not isinstance(df.columns, pd.MultiIndex):
                 tdf = df.copy()
-                tdf.index.name = 'datetime'
+                # tdf.index.name = 'datetime'
                 tdf.to_csv(csv_path)
                 print(f"Saved {csv_path}")
             elif ticker in df.columns.get_level_values(0):
                 tdf = df[ticker].copy()
-                tdf.index.name = 'datetime'
+                # tdf.index.name = 'datetime'
                 tdf.to_csv(csv_path)
                 print(f"Saved {csv_path}")
             else:

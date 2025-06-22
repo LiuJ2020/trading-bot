@@ -4,3 +4,4 @@ __pycache__/
 .env
 .env.*
 *.log
+trading_framework/data/csv_data/*.csv
