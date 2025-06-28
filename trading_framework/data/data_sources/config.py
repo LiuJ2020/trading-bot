@@ -33,6 +33,7 @@ SEGMENTS = {
         'end': '2007-12-31',
         'description': 'Steady pre-crisis expansion, low volatility.'
     }
+    
 }
 
 # Example ETF and index groups (expand as needed)

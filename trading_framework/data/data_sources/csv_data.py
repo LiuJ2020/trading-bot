@@ -8,6 +8,7 @@ import yfinance as yf
 from .config import STOCK_GROUPS, SEGMENTS
 from typing import Union, List, Optional
 
+
 def get_csv_data(
     segment_key: str,
     group_or_ticker: Union[str, List[str]],
@@ -17,9 +18,11 @@ def get_csv_data(
     For a group or ticker and segment, check if the CSV exists. If so, return it as a backtrader GenericCSVData.
     If a group is given, returns a list of GenericCSVData objects.
     If the file is not found, attempts to download it using download_segment_data.
+    Applies the segment using fromdate and todate on GenericCSVData.
     """
     segment = SEGMENTS[segment_key]
-    segment_name = segment['name']
+    segment_start = datetime.strptime(segment['start'], '%Y-%m-%d')
+    segment_end = datetime.strptime(segment['end'], '%Y-%m-%d')
 
     # Determine tickers to load
     if isinstance(group_or_ticker, str):
@@ -35,7 +38,7 @@ def get_csv_data(
     datas = []
     missing = []
     for ticker in tickers:
-        csv_path = os.path.join(data_dir, f"{ticker}_{segment_name}.csv")
+        csv_path = os.path.join(data_dir, f"{ticker}.csv")
         if os.path.exists(csv_path):
             data = GenericCSVData(
                 dataname=csv_path,
@@ -46,17 +49,19 @@ def get_csv_data(
                 low=3,
                 close=4,
                 volume=5,
-                openinterest=-1
+                openinterest=-1,
+                fromdate=segment_start,
+                todate=segment_end
             )
             datas.append(data)
         else:
             missing.append(ticker)
     if missing:
         print(f"Missing files for: {missing}. Attempting to download...")
-        download_segment_data(segment_key, missing, data_dir)
+        download_segment_data(missing, data_dir)
         # Try loading again after download
         for ticker in missing:
-            csv_path = os.path.join(data_dir, f"{ticker}_{segment_name}.csv")
+            csv_path = os.path.join(data_dir, f"{ticker}.csv")
             if os.path.exists(csv_path):
                 data = GenericCSVData(
                     dataname=csv_path,
@@ -67,7 +72,9 @@ def get_csv_data(
                     low=3,
                     close=4,
                     volume=5,
-                    openinterest=-1
+                    openinterest=-1,
+                    fromdate=segment_start,
+                    todate=segment_end
                 )
                 datas.append(data)
             else:
@@ -76,21 +83,15 @@ def get_csv_data(
         return datas[0]
     return datas
 
-# New function to batch download S&P 500 data for a segment
+
 def download_segment_data(
-    segment_key: str,
     group_or_ticker: Union[str, List[str]],
     data_dir: str = 'data/csv_data'
 ) -> None:
     """
-    Downloads data for a given segment (date range) for a group (from STOCK_GROUPS) or a single ticker.
-    Only downloads tickers that do not already have a CSV for this segment.
+    Downloads all available data for a group (from STOCK_GROUPS) or a single ticker and saves as <TICKER>.csv.
+    Only downloads tickers that do not already have a CSV.
     """
-    segment = SEGMENTS[segment_key]
-    start = segment['start']
-    end = segment['end']
-    segment_name = segment['name']
-
     # Determine tickers to download
     if isinstance(group_or_ticker, str):
         if group_or_ticker in STOCK_GROUPS:
@@ -105,32 +106,30 @@ def download_segment_data(
     os.makedirs(data_dir, exist_ok=True)
     missing_tickers = []
     for ticker in tickers:
-        csv_path = os.path.join(data_dir, f"{ticker}_{segment_name}.csv")
+        csv_path = os.path.join(data_dir, f"{ticker}.csv")
         if not os.path.exists(csv_path):
             missing_tickers.append(ticker)
 
     if not missing_tickers:
-        print(f"All data for group/ticker {group_or_ticker} in segment {segment_name} already downloaded.")
+        print(f"All data for group/ticker {group_or_ticker} already downloaded.")
         return
 
-    print(f"Downloading {len(missing_tickers)} tickers for group/ticker {group_or_ticker} in segment {segment_name}...")
+    print(f"Downloading {len(missing_tickers)} tickers for group/ticker {group_or_ticker}...")
     # Download in batches of 50 to avoid API limits
     batch_size = 50
     for i in range(0, len(missing_tickers), batch_size):
         batch = missing_tickers[i:i+batch_size]
-        df = yf.download(batch, start=start, end=end, group_by='ticker', auto_adjust=True, threads=True)
+        df = yf.download(batch, group_by='ticker', auto_adjust=True, threads=True)
         for ticker in batch:
-            csv_path = os.path.join(data_dir, f"{ticker}_{segment_name}.csv")
+            csv_path = os.path.join(data_dir, f"{ticker}.csv")
             # yfinance returns a multi-indexed DataFrame for multiple tickers
             if len(batch) == 1 and not isinstance(df.columns, pd.MultiIndex):
                 tdf = df.copy()
-                # tdf.index.name = 'datetime'
                 tdf.to_csv(csv_path)
                 print(f"Saved {csv_path}")
             elif ticker in df.columns.get_level_values(0):
                 tdf = df[ticker].copy()
-                # tdf.index.name = 'datetime'
                 tdf.to_csv(csv_path)
                 print(f"Saved {csv_path}")
             else:
-                print(f"No data for {ticker} in segment {segment_name}")
+                print(f"No data for {ticker}")
