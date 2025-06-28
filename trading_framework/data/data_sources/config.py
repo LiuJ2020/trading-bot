@@ -48,6 +48,9 @@ STOCK_GROUPS = {
     'BLUE_CHIP': [
         'NVDA', 'AMD', 'INTC', 'TSM', 'QCOM', 'AVGO', 'TXN', 'MU', 'ADI', 'LRCX', 'AMAT', 'ASML', 'NXPI', 'MRVL', 'SWKS'
     ],
+    'TECH': [
+        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA', 'ADBE', 'INTC', 'CSCO', 'ORCL', 'CRM', 'NFLX', 'PYPL', 'SNAP'
+    ],
     # Add more groups as needed
 }
 
