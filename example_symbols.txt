@@ -1,0 +1,18 @@
+# Example symbols file for data ingestion
+# One symbol per line, comments start with #
+
+# Tech stocks
+AAPL
+MSFT
+GOOGL
+AMZN
+META
+
+# Finance
+JPM
+BAC
+GS
+
+# ETFs
+SPY
+QQQ

@@ -5,3 +5,8 @@ __pycache__/
 .env.*
 *.log
 trading_framework/data/csv_data/*.csv
+
+# Data storage
+data_storage/
+*.db
+*.parquet

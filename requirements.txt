@@ -2,9 +2,14 @@ backtrader
 pandas
 numpy
 matplotlib
+seaborn
+scipy
+scikit-learn
+statsmodels
 requests
 yfinance
 ipykernel
-requests
 beautifulsoup4
 lxml
+pyarrow
+fastparquet
